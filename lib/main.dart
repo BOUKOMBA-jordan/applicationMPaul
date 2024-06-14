@@ -1,6 +1,6 @@
+import 'package:application_suivi_stock/httpRequest/user.dart';
 import 'package:application_suivi_stock/vente.dart';
 import 'package:flutter/material.dart';
-
 
 void main() {
   runApp(const MyApp());
@@ -35,11 +35,16 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  bool _secureText =true; // Variable pour gérer l'affichage sécurisé du mot de passe
-  final TextEditingController _nameController = TextEditingController(); // Contrôleur pour le champ nom
-  final TextEditingController _descriptionController = TextEditingController(); // Contrôleur pour le champ description
-  final TextEditingController _passwordController = TextEditingController(); // Contrôleur pour le champ mot de passe
-  final GlobalKey<FormState> _formKey = GlobalKey<FormState>(); // Clé pour identifier le formulaire
+  bool _secureText =
+      true; // Variable pour gérer l'affichage sécurisé du mot de passe
+  final TextEditingController _nameController =
+      TextEditingController(); // Contrôleur pour le champ nom
+  final TextEditingController _descriptionController =
+      TextEditingController(); // Contrôleur pour le champ description
+  final TextEditingController _passwordController =
+      TextEditingController(); // Contrôleur pour le champ mot de passe
+  final GlobalKey<FormState> _formKey =
+      GlobalKey<FormState>(); // Clé pour identifier le formulaire
 
   @override
   Widget build(BuildContext context) {
@@ -61,7 +66,6 @@ class _MyHomePageState extends State<MyHomePage> {
                     labelText: "Nom", // Libellé du champ nom
                     border: OutlineInputBorder(), // Style de bordure
                   ),
-                  
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Veuillez entrer votre nom';
@@ -70,7 +74,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   },
                 ),
                 const SizedBox(height: 16), // Espacement entre les champs
-               
+
                 TextFormField(
                   controller: _passwordController,
                   decoration: InputDecoration(
@@ -105,32 +109,38 @@ class _MyHomePageState extends State<MyHomePage> {
                 const SizedBox(height: 16),
 
                 Center(
-                  child: ElevatedButton.icon(
-                    style: const ButtonStyle(
+                    child: ElevatedButton.icon(
+                  style: const ButtonStyle(
                       padding: WidgetStatePropertyAll(EdgeInsets.all(20)),
-                      backgroundColor: WidgetStatePropertyAll(Colors.green)
-                    ),
-                    onPressed: () {
-                      if (_formKey.currentState!.validate()) {
-                        print("Nom: " + _nameController.text);
-                        print("Description: " + _descriptionController.text);
-                        print("Mot de passe: " + _passwordController.text);
-                      }
+                      backgroundColor: WidgetStatePropertyAll(Colors.green)),
+                  onPressed: () async {
+                    final userId = await User()
+                        .login(_nameController.text, _passwordController.text);
+                    print(userId);
+                    if (userId > 0) {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => const VenteAppPage(title: 'suivis  de vente',)),
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              userId != null // Vérifiez si userId est non null
+                                  ? VenteAppPage(
+                                      title: 'suivis de vente',
+                                      userId: userId,
+                                    )
+                                  : VenteAppPage(
+                                      title: 'suivis de vente',
+                                    ),
+                        ),
                       );
-                    },
-                    label: const Text(
-                      "Se connecter",
-                      style: TextStyle(
+                    }
+                  },
+                  label: const Text(
+                    "Se connecter",
+                    style: TextStyle(
                       fontSize: 20,
                     ),
-                    ),
-                
-                  )
-                 
-                ),
+                  ),
+                )),
               ],
             ),
           ),

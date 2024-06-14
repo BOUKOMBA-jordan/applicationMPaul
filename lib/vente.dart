@@ -1,7 +1,7 @@
+import 'package:application_suivi_stock/httpRequest/produits.dart';
 import 'package:flutter/material.dart';
 
-
-const List<String> list = <String>['One', 'Two', 'Three', 'Four'];
+const List<String> list = <String>['stock', 'vente'];
 
 void main() {
   runApp(const VenteApp());
@@ -13,7 +13,7 @@ class VenteApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'suivis  de vente', // Titre de l'application
+      title: 'suivis de vente', // Titre de l'application
       theme: ThemeData(
         primarySwatch: Colors
             .deepPurple, // Utilisation de la couleur primaire de Material Design
@@ -21,30 +21,42 @@ class VenteApp extends StatelessWidget {
             .adaptivePlatformDensity, // Adaptation de la densité visuelle en fonction de la plateforme
       ),
       home: const VenteAppPage(
-          title: 'suivis  de vente'), // Page d'accueil de l'application
+        title: 'suivis de vente',
+        userId: null,
+      ), // Page d'accueil de l'application
     );
   }
 }
 
 class VenteAppPage extends StatefulWidget {
-  const VenteAppPage({Key? key, required this.title});
-
   final String title;
+  final int? userId; // Le userId est maintenant de type int?
+
+  const VenteAppPage({Key? key, required this.title, this.userId})
+      : super(key: key);
 
   @override
-  State<VenteAppPage> createState() => _VenteAppPagePageState();
+  State<VenteAppPage> createState() => _VenteAppPagePageState(this.userId);
 }
 
 class _VenteAppPagePageState extends State<VenteAppPage> {
-  bool _secureText =true; // Variable pour gérer l'affichage sécurisé du mot de passe
-  final TextEditingController _nameController = TextEditingController(); // Contrôleur pour le champ nom
-  final TextEditingController _descriptionController = TextEditingController(); // Contrôleur pour le champ description
-  final TextEditingController _passwordController = TextEditingController(); // Contrôleur pour le champ mot de passe
-  final GlobalKey<FormState> _formKey = GlobalKey<FormState>(); // Clé pour identifier le formulaire
-   String dropdownValue1 = list.first;
-   String dropdownValue2 = list.first;
+  bool _secureText =
+      true; // Variable pour gérer l'affichage sécurisé du mot de passe
+  final TextEditingController _quantite =
+      TextEditingController(); // Contrôleur pour le champ nom
+  // Contrôleur pour le champ mot de passe
+  final GlobalKey<FormState> _formKey =
+      GlobalKey<FormState>(); // Clé pour identifier le formulaire
+  String dropdownValue2 = list.first;
+  String? dropdownValue1;
 
-   Widget _buildDialog(BuildContext context) {
+  int? userId;
+
+  _VenteAppPagePageState(int? userId) {
+    this.userId = userId;
+  }
+
+  Widget _buildDialog(BuildContext context) {
     return AlertDialog(
       title: Text('Insertion des données'),
       actions: <Widget>[
@@ -72,123 +84,159 @@ class _VenteAppPagePageState extends State<VenteAppPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-
                 Container(
                   padding: const EdgeInsets.only(left: 16, right: 16),
                   decoration: BoxDecoration(
-                    border: Border.all(color: Colors.grey,width: 1),
-                    borderRadius: BorderRadius.circular(15)
+                    border: Border.all(color: Colors.grey, width: 1),
+                    borderRadius: BorderRadius.circular(15),
                   ),
                   child: DropdownButton<String>(
-                  dropdownColor: Colors.white,
-                  value: dropdownValue1,
-                  icon: const Icon(Icons.arrow_drop_down),
-                  iconSize: 36,
-                  isExpanded: true,
-                  elevation: 16,
-                  style: const TextStyle(
-                    color: Colors.black,
-                    fontSize: 22,
-                  ),
-                  underline: const SizedBox(),
-                  onChanged: (String? value) {
-                    // This is called when the user selects an item.
-                    setState(() {
-                      dropdownValue1= value!;
-                    });
-                  },
-                  items: list.map<DropdownMenuItem<String>>((String value) {
-                    return DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(value),
-                    );
-                  }).toList()
+                    dropdownColor: Colors.white,
+                    value: dropdownValue2,
+                    icon: const Icon(Icons.arrow_drop_down),
+                    iconSize: 36,
+                    isExpanded: true,
+                    elevation: 16,
+                    style: const TextStyle(
+                      color: Colors.black,
+                      fontSize: 22,
+                    ),
+                    underline: const SizedBox(),
+                    onChanged: (String? value) {
+                      // This is called when the user selects an item.
+                      setState(() {
+                        dropdownValue1 = value!;
+                      });
+                    },
+                    items: list.map<DropdownMenuItem<String>>((String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value),
+                      );
+                    }).toList(),
                   ),
                 ),
                 const SizedBox(height: 16), // Espacement entre les champs
 
-                Container(
-                  padding: const EdgeInsets.only(left: 16, right: 16),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.grey,width: 1),
-                    borderRadius: BorderRadius.circular(15)
-                  ),
-                  child: DropdownButton<String>(
-                  dropdownColor: Colors.white,
-                  value: dropdownValue2,
-                  icon: const Icon(Icons.arrow_drop_down),
-                  iconSize: 36,
-                  isExpanded: true,
-                  elevation: 16,
-                  style: const TextStyle(
-                    color: Colors.black,
-                    fontSize: 22,
-                  ),
-                  underline: const SizedBox(),
-                  onChanged: (String? value) {
-                    // This is called when the user selects an item.
-                    setState(() {
-                      dropdownValue2 = value!;
-                    });
+                FutureBuilder<List<String>>(
+                  future: Produits().makeGetRequest(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return CircularProgressIndicator();
+                    } else if (snapshot.hasError) {
+                      return Text('Error: ${snapshot.error}');
+                    } else if (snapshot.hasData) {
+                      //return Text('Data: ${snapshot.data}');
+                      final List<String> data = snapshot.data!;
+                      final uniqueData =
+                          data.toSet().toList(); // Remove duplicates
+                      if (dropdownValue1 == null && uniqueData.isNotEmpty) {
+                        dropdownValue1 = uniqueData.first;
+                      }
+                      return Column(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.only(left: 16, right: 16),
+                            decoration: BoxDecoration(
+                              border: Border.all(color: Colors.grey, width: 1),
+                              borderRadius: BorderRadius.circular(15),
+                            ),
+                            child: DropdownButton<String>(
+                              dropdownColor: Colors.white,
+                              value: dropdownValue1,
+                              icon: const Icon(Icons.arrow_drop_down),
+                              iconSize: 36,
+                              isExpanded: true,
+                              elevation: 16,
+                              style: const TextStyle(
+                                color: Colors.black,
+                                fontSize: 15,
+                              ),
+                              underline: const SizedBox(),
+                              onChanged: (String? value) {
+                                // This is called when the user selects an item.
+                                setState(() {
+                                  dropdownValue1 = value!;
+                                });
+                              },
+                              items: data.map<DropdownMenuItem<String>>(
+                                  (String value) {
+                                return DropdownMenuItem<String>(
+                                  value: value,
+                                  child: Text(value),
+                                );
+                              }).toList(),
+                            ),
+                          ),
+                          const SizedBox(
+                              height: 16), // Espacement entre les champs
+                        ],
+                      );
+                    } else {
+                      return Text('No data');
+                    }
                   },
-                  items: list.map<DropdownMenuItem<String>>((String value) {
-                    return DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(value),
-                    );
-                  }).toList()
-                  ),
                 ),
+
                 const SizedBox(height: 16), // Espacement entre les champs
 
                 TextFormField(
                   keyboardType: TextInputType.number,
-                  controller: _nameController,
+                  controller: _quantite,
                   decoration: const InputDecoration(
-                    labelText: "Renseigner la quantitée", // Libellé du champ nom
+                    labelText: "Renseigner la quantité", // Libellé du champ nom
                     border: OutlineInputBorder(), // Style de bordure
                   ),
-                  
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Veuillez saisire une quantitée';
+                      return 'Veuillez saisir une quantité';
                     }
                     return null;
                   },
                 ),
+
                 const SizedBox(height: 16), // Espacement entre les champs
-               
+
                 Center(
                   child: ElevatedButton.icon(
-                    style: const ButtonStyle(
-                      padding: WidgetStatePropertyAll(EdgeInsets.all(20)),
-                      backgroundColor: WidgetStatePropertyAll(Colors.green)
+                    style: ButtonStyle(
+                      padding: MaterialStateProperty.all(EdgeInsets.all(20)),
+                      backgroundColor: MaterialStateProperty.all(Colors.green),
                     ),
-                    onPressed: () {
-                      showDialog<void>(
-                        context: context,
-                        useRootNavigator:
-                            true, // ignore: avoid_redundant_argument_values
-                        builder: _buildDialog,
-                      );
+                    onPressed: () async {
                       if (_formKey.currentState!.validate()) {
-                        print("Nom: " + _nameController.text);
-                        print("Description: " + dropdownValue1);
-                        print("Mot de passe: " + dropdownValue2);
-
+                        print("Valeur 1: " + dropdownValue2);
+                        print("Valeur 2: " + dropdownValue1!);
+                        print("Quantite : " + _quantite.text);
+                        print("UserId : " + userId.toString());
+                        int status = await Produits().enregistreProduit(
+                            userId.toString(),
+                            dropdownValue1!,
+                            dropdownValue2,
+                            _quantite.text);
+                        if (status == 200) {
+                          showDialog<void>(
+                            context: context,
+                            useRootNavigator:
+                                true, // ignore: avoid_redundant_argument_values
+                            builder: _buildDialog,
+                          );
+                        }else {
+                           print("produits non enregistrer");
+                        }
                       }
-                      
                     },
+                    icon: Icon(Icons.check),
                     label: const Text(
                       "Valider",
                       style: TextStyle(
-                      fontSize: 20,
+                        fontSize: 20,
+                      ),
                     ),
-                    ),
-                
-                  )
-                 
+                  ),
                 ),
+
+                const SizedBox(height: 16), // Espacement entre les champs
               ],
             ),
           ),
