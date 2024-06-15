@@ -4,7 +4,7 @@ import 'dart:convert';
 class User {
   Future<int> login(String email, String password) async {
     // URL de l'API
-    final url = Uri.parse('http://192.168.0.107:8000/api/login');
+    final url = Uri.parse('http://192.168.0.100:8000/api/login');
 
     // Corps de la requête
     final Map<String, dynamic> requestBody = {

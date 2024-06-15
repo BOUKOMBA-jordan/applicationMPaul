@@ -4,7 +4,7 @@ import 'dart:convert'; // Pour décoder JSON
 class Produits {
   Future<List<String>> makeGetRequest() async {
     // URL de l'API
-    final url = Uri.parse('http://192.168.0.107:8000/api/produits');
+    final url = Uri.parse('http://192.168.0.100:8000/api/produits');
     try {
       // Effectuer la requête GET
       final response = await http.get(url);
@@ -31,7 +31,7 @@ class Produits {
 
   Future<int> enregistreProduit(String user_id, String reference, String action, String quantite ) async {
     // URL de l'API
-    final url = Uri.parse('http://192.168.0.107:8000/api/enregistreProduit');
+    final url = Uri.parse('http://192.168.0.100:8000/api/enregistreProduit');
 
     // Corps de la requête
     final Map<String, dynamic> requestBody = {

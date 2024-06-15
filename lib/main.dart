@@ -12,15 +12,13 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Connexion', // Titre de l'application
+      title: 'Connexion',
       theme: ThemeData(
-        primarySwatch: Colors
-            .deepPurple, // Utilisation de la couleur primaire de Material Design
-        visualDensity: VisualDensity
-            .adaptivePlatformDensity, // Adaptation de la densité visuelle en fonction de la plateforme
+        primarySwatch: Colors.deepPurple,
+        visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: const MyHomePage(
-          title: 'Connexion'), // Page d'accueil de l'application
+      home: const MyHomePage(title: 'Connexion'),
+      debugShowCheckedModeBanner: false, // Ajout de cette ligne pour enlever la bannière de débogag
     );
   }
 }
@@ -35,114 +33,106 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  bool _secureText =
-      true; // Variable pour gérer l'affichage sécurisé du mot de passe
-  final TextEditingController _nameController =
-      TextEditingController(); // Contrôleur pour le champ nom
-  final TextEditingController _descriptionController =
-      TextEditingController(); // Contrôleur pour le champ description
-  final TextEditingController _passwordController =
-      TextEditingController(); // Contrôleur pour le champ mot de passe
-  final GlobalKey<FormState> _formKey =
-      GlobalKey<FormState>(); // Clé pour identifier le formulaire
+  bool _secureText = true;
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.title), // Titre de la page d'accueil
+        title: Text(widget.title),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
+      body: Center(
         child: SingleChildScrollView(
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                TextFormField(
-                  controller: _nameController,
-                  decoration: const InputDecoration(
-                    labelText: "Nom", // Libellé du champ nom
-                    border: OutlineInputBorder(), // Style de bordure
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Veuillez entrer votre nom';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16), // Espacement entre les champs
-
-                TextFormField(
-                  controller: _passwordController,
-                  decoration: InputDecoration(
-                    labelText: "Mot de passe", // Libellé du champ mot de passe
-                    border: const OutlineInputBorder(), // Style de bordure
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _secureText
-                            ? Icons
-                                .visibility_off // Icône pour afficher/masquer le mot de passe
-                            : Icons.remove_red_eye,
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Text(
+                "Veuillez vous connecter",
+                style: TextStyle(fontSize: 24),
+              ),
+              const SizedBox(height: 24),
+              Form(
+                key: _formKey,
+                child: Column(
+                  children: <Widget>[
+                    TextFormField(
+                      controller: _nameController,
+                      decoration: const InputDecoration(
+                        labelText: "Nom",
+                        border: OutlineInputBorder(),
                       ),
-                      onPressed: () {
-                        setState(() {
-                          _secureText = !_secureText;
-                        });
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Veuillez entrer votre nom';
+                        }
+                        return null;
                       },
                     ),
-                  ),
-                  obscureText:
-                      _secureText, // Masquage du texte du champ mot de passe
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Veuillez entrer un mot de passe';
-                    }
-                    if (value.length < 4) {
-                      return 'Le mot de passe doit contenir au moins 4 caractères';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-
-                Center(
-                    child: ElevatedButton.icon(
-                  style: const ButtonStyle(
-                      padding: WidgetStatePropertyAll(EdgeInsets.all(20)),
-                      backgroundColor: WidgetStatePropertyAll(Colors.green)),
-                  onPressed: () async {
-                    final userId = await User()
-                        .login(_nameController.text, _passwordController.text);
-                    print(userId);
-                    if (userId > 0) {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              userId != null // Vérifiez si userId est non null
-                                  ? VenteAppPage(
-                                      title: 'suivis de vente',
-                                      userId: userId,
-                                    )
-                                  : VenteAppPage(
-                                      title: 'suivis de vente',
-                                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: _passwordController,
+                      decoration: InputDecoration(
+                        labelText: "Mot de passe",
+                        border: const OutlineInputBorder(),
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _secureText
+                                ? Icons.visibility_off
+                                : Icons.visibility,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              _secureText = !_secureText;
+                            });
+                          },
                         ),
-                      );
-                    }
-                  },
-                  label: const Text(
-                    "Se connecter",
-                    style: TextStyle(
-                      fontSize: 20,
+                      ),
+                      obscureText: _secureText,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Veuillez entrer un mot de passe';
+                        }
+                        if (value.length < 4) {
+                          return 'Le mot de passe doit contenir au moins 4 caractères';
+                        }
+                        return null;
+                      },
                     ),
-                  ),
-                )),
-              ],
-            ),
+                    const SizedBox(height: 24),
+                    ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 16.0, horizontal: 32.0), backgroundColor: Colors.green,
+                      ),
+                      onPressed: () async {
+                        final userId = await User().login(
+                            _nameController.text, _passwordController.text);
+                        if (userId > 0) {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => VenteAppPage(
+                                title: 'Suivi de vente',
+                                userId: userId,
+                              ),
+                            ),
+                          );
+                        }
+                      },
+                      icon: const Icon(Icons.login),
+                      label: const Text(
+                        "Se connecter",
+                        style: TextStyle(fontSize: 20),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
         ),
       ),
